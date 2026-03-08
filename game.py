@@ -323,7 +323,6 @@ class WeaponPickup:
         surface.blit(gs2, (sx-11, sy-11))
         pygame.draw.rect(surface, (15,15,15), (sx, sy, self.w, self.h), border_radius=8)
         pygame.draw.rect(surface, col, (sx, sy, self.w, self.h), 2, border_radius=8)
-        # Icon depending on weapon
         icons = {"shotgun":"⊕","rocket":"⚡","laser":"▶","flamethrower":"⬡"}
         icon_surf = pygame.font.SysFont("consolas", 16, bold=True).render(icons.get(self.wtype,"?"), True, col)
         surface.blit(icon_surf, (sx + self.w//2 - icon_surf.get_width()//2, sy + 4))
@@ -378,21 +377,17 @@ class Turret:
         base = (200,50,0) if flash else (70,35,0)
         pygame.draw.rect(surface, base, (sx, sy+18, self.w, self.h-18), border_radius=5)
         pygame.draw.rect(surface, (100,50,0), (sx+2, sy+20, self.w-4, self.h-22), border_radius=4)
-        # Rivet bolts
         for bx2 in [sx+5, sx+self.w-7]:
             pygame.draw.circle(surface, (150,70,0), (bx2, sy+24), 3)
         cx = sx+self.w//2; cy = sy+10
         pygame.draw.circle(surface, (50,25,0), (cx, cy), 14)
         pygame.draw.circle(surface, (100,50,0) if not flash else (255,100,0), (cx, cy), 11)
-        # Barrel
         barrel_len = 22
         ex2 = int(cx + math.cos(self.angle)*barrel_len)
         ey2 = int(cy + math.sin(self.angle)*barrel_len)
         pygame.draw.line(surface, (150,70,0), (cx,cy), (ex2,ey2), 6)
         pygame.draw.line(surface, (255,140,0) if flash else (200,100,0), (cx,cy), (ex2,ey2), 3)
-        # Muzzle tip
         pygame.draw.circle(surface, (255,140,0) if flash else (160,80,0), (ex2,ey2), 4)
-        # HP bar
         bar_w = 28; filled = int(bar_w * self.hp / self.max_hp)
         pygame.draw.rect(surface, (80,0,0), (sx+2, sy-7, bar_w, 4), border_radius=2)
         pygame.draw.rect(surface, (255,80,0), (sx+2, sy-7, filled, 4), border_radius=2)
@@ -425,14 +420,12 @@ class ShieldEnemy:
                                        is_enemy=True, color=(0,200,255)))
         if self.flash_timer > 0: self.flash_timer -= 1
     def take_hit(self, bullet_dir):
-        """bullet_dir: 1=going right, -1=going left. Shield faces direction enemy is looking."""
-        # Shield blocks if bullet travelling INTO the shield side
-        bullet_coming_from_right = (bullet_dir < 0)  # bullet going left = came from right
+        bullet_coming_from_right = (bullet_dir < 0)
         shield_on_right = (self.direction > 0)
         if self.shield_up and (bullet_coming_from_right == shield_on_right):
             self.shield_hp -= 1
             if self.shield_hp <= 0: self.shield_up = False
-            return False   # blocked
+            return False
         self.hp -= 1; self.flash_timer = 8
         return True
     def draw(self, surface, cam_x):
@@ -492,13 +485,10 @@ class Drone:
         flash = self.flash_timer > 0
         body = (50,50,50) if not flash else (220,220,220)
         pygame.draw.ellipse(surface, body, (sx+2, sy+4, self.w-4, self.h-8))
-        # Rotor arms + blades
         for rx2, ry2 in [(sx-5,sy+2),(sx+self.w-5,sy+2),(sx-5,sy+self.h-10),(sx+self.w-5,sy+self.h-10)]:
             pygame.draw.rect(surface, (80,80,80), (rx2, ry2, 10, 5), border_radius=3)
             pygame.draw.ellipse(surface, NEON_YELLOW, (rx2, ry2, 10, 4))
-        # Underbelly gun
         pygame.draw.rect(surface, (100,0,0), (sx+self.w//2-3, sy+self.h-6, 6, 10), border_radius=2)
-        # Red eye
         pygame.draw.circle(surface, NEON_RED, (sx+self.w//2, sy+self.h//2-1), 5)
         pygame.draw.circle(surface, (255,150,150), (sx+self.w//2, sy+self.h//2-1), 2)
         bar_w = 28; filled = int(bar_w * self.hp / self.max_hp)
@@ -884,7 +874,6 @@ def make_weapon_pickups(level=1):
         (2700, GROUND_Y-30,  "shotgun"),
         (3200, GROUND_Y-30,  "laser"),
         (3800, GROUND_Y-30,  "rocket"),
-        # On platforms
         (500,  GROUND_Y-200, "flamethrower"),
         (1150, GROUND_Y-180, "shotgun"),
         (2500, GROUND_Y-270, "laser"),
@@ -905,7 +894,6 @@ def make_weapon_pickups(level=1):
     return [WeaponPickup(x, y, w) for x, y, w in positions]
 
 def make_spike_traps(level=1):
-    """Spike traps on the ground at dangerous spots."""
     xs = [460, 780, 1250, 1700, 2150, 2600, 3050, 3500, 3850]
     if level == 2:
         xs = [380, 700, 1150, 1620, 2080, 2540, 2990, 3440, 3790]
@@ -914,52 +902,42 @@ def make_spike_traps(level=1):
 def make_turrets(level=1):
     defs = [
         (820,  GROUND_Y-40),
-        (1600, GROUND_Y-40),
-        (2400, GROUND_Y-40),
-        (3100, GROUND_Y-40),
-        # On elevated positions
-        (1150, GROUND_Y-150-40),
-        (2280, GROUND_Y-190-40),
+        # (1600, GROUND_Y-40),
+        # (2400, GROUND_Y-40),
+        # (3100, GROUND_Y-40),
+        # (1150, GROUND_Y-150-40),
+        # (2280, GROUND_Y-190-40),
     ]
     if level == 2:
         defs = [
             (750,  GROUND_Y-40),
             (1500, GROUND_Y-40),
-            (2300, GROUND_Y-40),
-            (3000, GROUND_Y-40),
-            (3600, GROUND_Y-40),
-            (1100, GROUND_Y-160-40),
-            (2260, GROUND_Y-200-40),
+            # (2300, GROUND_Y-40),
+            # (3000, GROUND_Y-40),
+            # (3600, GROUND_Y-40),
+            # (1100, GROUND_Y-160-40),
+            # (2260, GROUND_Y-200-40),
         ]
     return [Turret(x, y) for x, y in defs]
 
 def make_shield_enemies(level=1):
     defs = [
         (650,  GROUND_Y-48, 500, 800),
-        (1300, GROUND_Y-48, 1100,1550),
-        (2200, GROUND_Y-48, 2000,2500),
-        (3300, GROUND_Y-48, 3100,3600),
     ]
     if level == 2:
         defs = [
             (600,  GROUND_Y-48, 450, 750),
-            (1250, GROUND_Y-48, 1050,1500),
-            (2150, GROUND_Y-48, 1950,2450),
-            (2900, GROUND_Y-48, 2700,3150),
-            (3450, GROUND_Y-48, 3250,3700),
         ]
     return [ShieldEnemy(x,y,pl,pr) for x,y,pl,pr in defs]
 
 def make_drones(level=1):
     defs = [
         (3150, GROUND_Y-160, 3000,3400),
-        (3700, GROUND_Y-140, 3550,3900),
     ]
     if level == 2:
         defs = [
             (350,  GROUND_Y-160, 200, 550),
             (950,  GROUND_Y-150, 800,1150),
-
         ]
     return [Drone(x,y,pl,pr) for x,y,pl,pr in defs]
 
@@ -1025,7 +1003,6 @@ def init_level(level, carry_hp=5, carry_score=0, carry_weapon="blaster", carry_a
         "boss_seen": False,
         "player_in_rocket": False,
         "boarding_timer": 0,
-        # Weapon system
         "weapon": carry_weapon,
         "weapon_ammo": carry_ammo,
         "weapon_pickup_flash": 0,
@@ -1038,124 +1015,89 @@ font_med   = pygame.font.SysFont("consolas", 22, bold=True)
 font_small = pygame.font.SysFont("consolas", 18)
 KILLS_FOR_SUPER  = 3
 SUPER_DURATION   = 300
-# Mega cinematic phases:
-#  0 = robot descends          (MEGA_ROBOT_DESCENT frames)
-#  1 = missile rain + damage   (MEGA_FIRE_FRAMES frames)
-#  2 = cleanup explosions      (MEGA_IMPACT_FRAMES frames)
-#  3 = robot exits             (MEGA_EXIT_FRAMES frames)
 MEGA_ROBOT_DESCENT = 70
-MEGA_FIRE_FRAMES   = 200   # duration of missile barrage
-MEGA_IMPACT_FRAMES = 60    # post-barrage carnage
+MEGA_FIRE_FRAMES   = 200
+MEGA_IMPACT_FRAMES = 60
 MEGA_EXIT_FRAMES   = 55
 MEGA_TOTAL = MEGA_ROBOT_DESCENT + MEGA_FIRE_FRAMES + MEGA_IMPACT_FRAMES + MEGA_EXIT_FRAMES
-MEGA_MISSILE_SPEED = 7     # pixels per frame falling missiles travel
+MEGA_MISSILE_SPEED = 7
 
 
 def _draw_nemesis(surface, rx, ry, firing=False, rage=0.0):
-    """Draw the NEMESIS black-and-red mech robot.
-    firing=True = arms raised, launching missiles.
-    rage 0..1 = how crazed the glow/effects are."""
     tick = pygame.time.get_ticks()
     pulse = abs(math.sin(tick * 0.01))
     rage_pulse = abs(math.sin(tick * 0.025))
 
-    # ---- Dark red aura / shadow behind robot ----
     aura_r = int(90 + 30 * rage * pulse)
     aura = pygame.Surface((aura_r*2, aura_r*2), pygame.SRCALPHA)
     pygame.draw.ellipse(aura, (180, 0, 0, int((40 + 60*rage) * pulse)), (0, 0, aura_r*2, aura_r*2))
     surface.blit(aura, (rx + 70 - aura_r, ry + 90 - aura_r))
 
-    # ---- Legs ----
     leg_col = (18, 0, 0)
     pygame.draw.rect(surface, leg_col,    (rx + 24, ry + 132, 24, 40), border_radius=4)
     pygame.draw.rect(surface, leg_col,    (rx + 92, ry + 132, 24, 40), border_radius=4)
-    # Knee armour plates
     pygame.draw.rect(surface, (140, 0, 0), (rx + 20, ry + 144, 32, 12), border_radius=3)
     pygame.draw.rect(surface, (140, 0, 0), (rx + 88, ry + 144, 32, 12), border_radius=3)
-    # Feet
     pygame.draw.rect(surface, (25, 0, 0),  (rx + 14, ry + 166, 40, 12), border_radius=4)
     pygame.draw.rect(surface, (25, 0, 0),  (rx + 82, ry + 166, 40, 12), border_radius=4)
-    # Thruster glow under feet
     for fx in [rx + 28, rx + 96]:
         ts = pygame.Surface((28, 16), pygame.SRCALPHA)
         pygame.draw.ellipse(ts, (255, 40, 0, int(140 + 80*pulse)), (0, 0, 28, 16))
         surface.blit(ts, (fx - 4, ry + 174))
 
-    # ---- Body ----
     pygame.draw.rect(surface, (12, 0, 0),   (rx + 10, ry + 56, 120, 84), border_radius=10)
-    # Red chest panel
     pygame.draw.rect(surface, (160, 0, 0),  (rx + 18, ry + 62, 104, 30), border_radius=6)
-    # Rivet detail lines
     for i in range(3):
         pygame.draw.line(surface, (60, 0, 0), (rx+18, ry+72+i*8), (rx+122, ry+72+i*8), 1)
-    # Waist band
     pygame.draw.rect(surface, (100, 0, 0),  (rx + 10, ry + 126, 120, 10), border_radius=3)
 
-    # ---- Missile pod shoulder cannons (raised when firing) ----
     arm_raise = -18 if firing else 0
-    # Left arm
     pygame.draw.rect(surface, (20, 0, 0),   (rx - 28, ry + 64 + arm_raise, 40, 60), border_radius=7)
     pygame.draw.rect(surface, (120, 0, 0),  (rx - 28, ry + 64 + arm_raise, 40, 10), border_radius=4)
-    # Left missile pod (3 barrels)
     for bi in range(3):
         bx2 = rx - 30 + bi * 8
         by2 = ry + 58 + arm_raise
         pygame.draw.rect(surface, (50, 0, 0), (bx2, by2, 6, 18), border_radius=2)
         pygame.draw.rect(surface, (200, 0, 0), (bx2+1, by2, 4, 3))
-    # Right arm
     pygame.draw.rect(surface, (20, 0, 0),   (rx + 128, ry + 64 + arm_raise, 40, 60), border_radius=7)
     pygame.draw.rect(surface, (120, 0, 0),  (rx + 128, ry + 64 + arm_raise, 40, 10), border_radius=4)
-    # Right missile pod (3 barrels)
     for bi in range(3):
         bx2 = rx + 130 + bi * 8
         by2 = ry + 58 + arm_raise
         pygame.draw.rect(surface, (50, 0, 0), (bx2, by2, 6, 18), border_radius=2)
         pygame.draw.rect(surface, (200, 0, 0), (bx2+1, by2, 4, 3))
 
-    # ---- Shoulder armour spikes ----
-    # Left
     pygame.draw.polygon(surface, (100, 0, 0), [(rx+10,ry+58),(rx-4,ry+36),(rx+20,ry+58)])
     pygame.draw.polygon(surface, (60,  0, 0), [(rx+22,ry+58),(rx+10,ry+34),(rx+30,ry+58)])
-    # Right
     pygame.draw.polygon(surface, (100, 0, 0), [(rx+130,ry+58),(rx+144,ry+36),(rx+120,ry+58)])
     pygame.draw.polygon(surface, (60,  0, 0), [(rx+118,ry+58),(rx+130,ry+34),(rx+110,ry+58)])
 
-    # ---- Core eye on chest (glows red) ----
     core_r = int(12 + 6 * rage * rage_pulse)
     pygame.draw.circle(surface, (8, 0, 0),   (rx + 70, ry + 98), core_r + 6)
     pygame.draw.circle(surface, (200, 0, 0), (rx + 70, ry + 98), core_r)
     pygame.draw.circle(surface, (255, 80, 80),(rx + 70, ry + 98), max(1, core_r - 5))
-    # Core glow ring
     cgs = pygame.Surface(((core_r+14)*2, (core_r+14)*2), pygame.SRCALPHA)
     pygame.draw.circle(cgs, (255, 0, 0, int(90 * rage_pulse * (0.5 + rage*0.5))),
                        (core_r+14, core_r+14), core_r+14)
     surface.blit(cgs, (rx+70-(core_r+14), ry+98-(core_r+14)))
 
-    # ---- Head ----
     pygame.draw.rect(surface, (15, 0, 0),   (rx + 22, ry + 6, 96, 54), border_radius=8)
-    # Head armour ridge
     pygame.draw.rect(surface, (80, 0, 0),   (rx + 22, ry + 6, 96, 8),  border_radius=4)
-    # Horn / crest spikes on top
     pygame.draw.polygon(surface, (140, 0, 0), [(rx+55,ry+6),(rx+60,ry-18),(rx+65,ry+6)])
     pygame.draw.polygon(surface, (100, 0, 0), [(rx+68,ry+6),(rx+72,ry-12),(rx+76,ry+6)])
     pygame.draw.polygon(surface, (140, 0, 0), [(rx+76,ry+6),(rx+80,ry-18),(rx+85,ry+6)])
 
-    # ---- Visor: single glowing red slit ----
     pygame.draw.rect(surface, (5, 0, 0),    (rx + 28, ry + 22, 84, 22), border_radius=5)
     visor_intensity = int(180 + 75 * rage_pulse * (0.4 + rage * 0.6))
     pygame.draw.rect(surface, (visor_intensity, 0, 0), (rx+30, ry+25, 80, 16), border_radius=4)
-    # Visor inner bright line
     pygame.draw.rect(surface, (255, min(255,int(80*rage)), 0), (rx+30, ry+28, 80, 4))
-    # Visor flicker glow
     vg = pygame.Surface((80, 16), pygame.SRCALPHA)
     vg.fill((255, 0, 0, int(60 * pulse)))
     surface.blit(vg, (rx + 30, ry + 25))
 
-    # ---- Battle damage scratches ----
     for sx, sy, ex2, ey2 in [(rx+35,ry+70,rx+50,ry+82),(rx+90,ry+65,rx+100,ry+75),(rx+60,ry+108,rx+72,ry+118)]:
         pygame.draw.line(surface, (60,0,0), (sx,sy),(ex2,ey2), 2)
 
-    # ---- Name tag ----
     nf = pygame.font.SysFont("consolas", 13, bold=True)
     ns = nf.render("NEMESIS", True, (220, 0, 0))
     nsh = nf.render("NEMESIS", True, (0, 0, 0))
@@ -1164,12 +1106,10 @@ def _draw_nemesis(surface, rx, ry, firing=False, rage=0.0):
 
 
 def draw_mega_cinematic(surface, gs):
-    """NEMESIS robot descends → rains missiles → carnage → flies away."""
     tick = pygame.time.get_ticks()
     phase = gs["mega_missile_phase"]
     ma    = gs["mega_anim"]
 
-    # Cinematic letterbox (all phases)
     bar_h = 72
     bar_surf = pygame.Surface((WIDTH, bar_h), pygame.SRCALPHA)
     bar_surf.fill((0, 0, 0, 220))
@@ -1180,10 +1120,8 @@ def draw_mega_cinematic(surface, gs):
     robot_w = 160
     rx_center = WIDTH // 2 - robot_w // 2
 
-    # ---- Helper: draw one falling missile ----
     def draw_falling_missile(mx, my, trail_age=0):
         mxi, myi = int(mx), int(my)
-        # Trail upward
         for i in range(min(50, trail_age + 1)):
             ty = myi - i * 3
             size = max(1, int(7 * (1 - i/50)))
@@ -1191,29 +1129,23 @@ def draw_mega_cinematic(surface, gs):
             elif i < 20: col = random.choice([(255,180,0),(255,120,0)])
             else:        col = random.choice([(180,60,0),(120,30,0)])
             pygame.draw.circle(surface, col, (mxi + random.randint(-2,2), ty), size)
-        # Missile body (pointing down)
         pygame.draw.ellipse(surface, (30, 30, 30),   (mxi-7, myi-26, 14, 32))
-        pygame.draw.polygon(surface, (180, 0, 0), [   # nose tip (bottom)
+        pygame.draw.polygon(surface, (180, 0, 0), [
             (mxi, myi+10), (mxi-7, myi-6), (mxi+7, myi-6)
         ])
-        # Fins
         pygame.draw.polygon(surface, (80, 0, 0), [(mxi-7,myi-26),(mxi-16,myi-14),(mxi-7,myi-14)])
         pygame.draw.polygon(surface, (80, 0, 0), [(mxi+7,myi-26),(mxi+16,myi-14),(mxi+7,myi-14)])
-        # Nozzle flame (top)
         nf_p = abs(math.sin(tick * 0.06 + mx * 0.1))
         ns2 = pygame.Surface((22, 22), pygame.SRCALPHA)
         pygame.draw.circle(ns2, (255, 120, 0, int(200 * nf_p)), (11, 11), int(8 + 5*nf_p))
         pygame.draw.circle(ns2, (255, 255, 180, 220), (11, 11), 4)
         surface.blit(ns2, (mxi - 11, myi - 38))
 
-    # ================================================================
     if phase == 0:
-        # ROBOT DESCENDS — red thrusters blazing
         t = ma / MEGA_ROBOT_DESCENT
         ease = 1 - (1-t)**3
         ry = int(-220 + (robot_target_y + 220) * ease)
 
-        # Heavy thruster exhaust
         if ma % 2 == 0:
             for _ in range(8):
                 ex = rx_center + 70 + random.randint(-35, 35)
@@ -1224,7 +1156,6 @@ def draw_mega_cinematic(surface, gs):
 
         _draw_nemesis(surface, rx_center, ry, firing=False, rage=t * 0.4)
 
-        # "NEMESIS INBOUND" text
         if (ma // 5) % 2 == 0:
             font_warn = pygame.font.SysFont("consolas", 30, bold=True)
             ws = "⚠  NEMESIS INBOUND  ⚠"
@@ -1234,18 +1165,14 @@ def draw_mega_cinematic(surface, gs):
             surface.blit(wsh, (wx+2, HEIGHT - bar_h - 42 + 2))
             surface.blit(wt,  (wx,   HEIGHT - bar_h - 42))
 
-    # ================================================================
     elif phase == 1:
-        # ROBOT HOVERS + RAINS DOWN MISSILES
         ry = robot_target_y + int(math.sin(tick * 0.005) * 5)
         rage = min(1.0, ma / MEGA_FIRE_FRAMES)
         _draw_nemesis(surface, rx_center, ry, firing=True, rage=rage)
 
-        # Draw all active falling missiles
         for m in gs.get("mega_missiles", []):
             draw_falling_missile(m["x"], m["y"], trail_age=m.get("age", 0))
 
-        # Title
         fade_in = min(1.0, ma / 20)
         if fade_in > 0.05:
             font_mega = pygame.font.SysFont("consolas", 40, bold=True)
@@ -1261,23 +1188,18 @@ def draw_mega_cinematic(surface, gs):
             sub.set_alpha(int(255 * fade_in))
             surface.blit(sub, (WIDTH//2 - sub.get_width()//2, HEIGHT - bar_h - 20))
 
-    # ================================================================
     elif phase == 2:
-        # FINAL SALVO EXPLOSIONS — robot hovers triumphantly
         ry = robot_target_y + int(math.sin(tick * 0.005) * 4)
         _draw_nemesis(surface, rx_center, ry, firing=True, rage=1.0)
 
-        # Any remaining missiles still fall
         for m in gs.get("mega_missiles", []):
             draw_falling_missile(m["x"], m["y"], trail_age=m.get("age", 0))
 
-        # Red screen flicker
         if random.random() < 0.3:
             fl = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
             fl.fill((180, 0, 0, random.randint(10, 40)))
             surface.blit(fl, (0, 0))
 
-        # Title still showing
         font_mega = pygame.font.SysFont("consolas", 40, bold=True)
         lbl_str = "★  MEGA ROBOT  ★"
         fade_out = gs["mega_active"] / max(1, MEGA_EXIT_FRAMES)
@@ -1294,9 +1216,7 @@ def draw_mega_cinematic(surface, gs):
         surface.blit(bar_surf2, (0, 0))
         surface.blit(bar_surf2, (0, HEIGHT - bar_h))
 
-    # ================================================================
     elif phase == 3:
-        # ROBOT FLIES AWAY
         t = ma / MEGA_EXIT_FRAMES
         ease_out = t * t
         ry = int(robot_target_y - 260 * ease_out)
@@ -1329,7 +1249,7 @@ def draw_text_with_shadow(surface, text, font, color, shadow_color, x, y):
     surface.blit(text_surf,   (x, y))
 
 
-def draw_hud(hp, sc, kill_count, super_ready, super_stacks, mega_ready, level):
+def draw_hud(hp, sc, kill_count, super_ready, super_stacks, mega_ready, level, super_active=0):
     tick_hud = pygame.time.get_ticks()
 
     if level == 1:
@@ -1347,57 +1267,46 @@ def draw_hud(hp, sc, kill_count, super_ready, super_stacks, mega_ready, level):
         outline_color = (0,0,0)
         panel_alpha   = 160
 
-    # ---- Main HUD panel (bottom-left style) ----
     panel_w, panel_h = 310, 100
     panel = pygame.Surface((panel_w, panel_h), pygame.SRCALPHA)
     panel.fill((0, 0, 0, panel_alpha))
-    # Accent border line on right + bottom
     pygame.draw.line(panel, (*label_color, 180), (panel_w-1, 0), (panel_w-1, panel_h), 2)
     pygame.draw.line(panel, (*label_color, 180), (0, panel_h-1), (panel_w, panel_h-1), 2)
     screen.blit(panel, (6, 6))
 
-    # Score
     draw_text_with_shadow(screen, f"SCORE  {sc:06d}", font_big, score_color, shadow_color, 14, 10)
 
-    # HP row
     draw_text_with_shadow(screen, "HP", font_small, label_color, shadow_color, 14, 44)
     for i in range(5):
         col = hp_color if i < hp else ((80, 40, 40) if level == 1 else (60,20,40))
         rx = 44 + i * 24
-        # Heart shape using two circles + triangle approximation
         pygame.draw.circle(screen, col, (rx + 5, 51), 6)
         pygame.draw.circle(screen, col, (rx + 13, 51), 6)
         pygame.draw.polygon(screen, col, [(rx, 54), (rx + 18, 54), (rx + 9, 64)])
         pygame.draw.circle(screen, outline_color, (rx + 5, 51), 6, 1)
         pygame.draw.circle(screen, outline_color, (rx + 13, 51), 6, 1)
 
-    # Kill gauge row
     draw_text_with_shadow(screen, "KILLS", font_small, label_color, shadow_color, 14, 68)
     gauge_x = 68
     gauge_y = 70
     gauge_w = 180
     gauge_h = 12
-    # Background track
     pygame.draw.rect(screen, (30, 30, 30, 200), (gauge_x, gauge_y, gauge_w, gauge_h), border_radius=6)
-    # Fill
     fill_w = int(gauge_w * (kill_count / KILLS_FOR_SUPER))
     if fill_w > 0:
         fill_col = NEON_YELLOW if level == 1 else NEON_CYAN
         pygame.draw.rect(screen, fill_col, (gauge_x, gauge_y, fill_w, gauge_h), border_radius=6)
     pygame.draw.rect(screen, outline_color, (gauge_x, gauge_y, gauge_w, gauge_h), 1, border_radius=6)
-    # Tick marks
     for i in range(1, KILLS_FOR_SUPER):
         tx = gauge_x + int(gauge_w * i / KILLS_FOR_SUPER)
         pygame.draw.line(screen, outline_color, (tx, gauge_y), (tx, gauge_y + gauge_h), 1)
 
-    # Bank row — stacked super orbs
     draw_text_with_shadow(screen, "BANK", font_small, label_color, shadow_color, 14, 88)
     for i in range(2):
         banked = i < super_stacks
         bx2 = 68 + i * 36
         by2 = 88
         orb_col = (255, 80, 255) if (banked and mega_ready) else ((255, 180, 0) if banked else (40, 35, 10))
-        # Orb glow if ready
         if banked:
             glow_s = pygame.Surface((34, 24), pygame.SRCALPHA)
             glow_col = (255, 80, 255, 60) if mega_ready else (255, 180, 0, 50)
@@ -1409,7 +1318,6 @@ def draw_hud(hp, sc, kill_count, super_ready, super_stacks, mega_ready, level):
             star = font_small.render("★", True, WHITE)
             screen.blit(star, (bx2 + 5, by2 - 1))
 
-    # ---- Level badge (top right) ----
     lv_panel = pygame.Surface((110, 32), pygame.SRCALPHA)
     lv_panel.fill((0, 0, 0, panel_alpha))
     pygame.draw.line(lv_panel, (*label_color, 180), (0, 0), (0, 32), 2)
@@ -1418,7 +1326,18 @@ def draw_hud(hp, sc, kill_count, super_ready, super_stacks, mega_ready, level):
     lv_col = NEON_YELLOW if level==2 else (255, 200, 0)
     draw_text_with_shadow(screen, f"LEVEL  {level}", font_small, lv_col, shadow_color, WIDTH-110, 12)
 
-    # ---- Super / Mega announcement (top-center) ----
+    # Super active indicator
+    if super_active > 0:
+        prog = super_active / SUPER_DURATION
+        bar_w2 = 200
+        bar_x2 = WIDTH - bar_w2 - 10
+        bar_y2 = 44
+        pygame.draw.rect(screen, (0,40,40), (bar_x2, bar_y2, bar_w2, 12), border_radius=5)
+        pygame.draw.rect(screen, NEON_CYAN, (bar_x2, bar_y2, int(bar_w2*prog), 12), border_radius=5)
+        pygame.draw.rect(screen, WHITE, (bar_x2, bar_y2, bar_w2, 12), 1, border_radius=5)
+        inv_lbl = font_small.render("★ INVINCIBLE ★", True, NEON_YELLOW)
+        screen.blit(inv_lbl, (bar_x2 + bar_w2//2 - inv_lbl.get_width()//2, bar_y2 - 20))
+
     if mega_ready:
         pulse_t = abs(math.sin(tick_hud * 0.008))
         banner_w = 440
@@ -1441,7 +1360,6 @@ def draw_hud(hp, sc, kill_count, super_ready, super_stacks, mega_ready, level):
         draw_text_with_shadow(screen, txt, font_big, flash_col, shadow_color,
                               WIDTH//2 - font_big.size(txt)[0]//2, 10)
 
-    # ---- Controls hint ----
     hint_text = "← → MOVE   ↑ JUMP   SPACE SHOOT   Q SUPER"
     hint_w = font_small.size(hint_text)[0]
     hint_panel = pygame.Surface((hint_w + 20, 24), pygame.SRCALPHA)
@@ -1491,29 +1409,17 @@ def draw_background(cam_x, level):
 
 
 def draw_start_screen():
-    """Simple title screen."""
     t = pygame.time.get_ticks()
     screen.fill((5, 5, 20))
 
-    # Title
     pulse = abs(math.sin(t * 0.002))
     title_col = tuple(int(a * (0.7 + 0.3 * pulse)) for a in NEON_CYAN)
     title = pygame.font.SysFont("consolas", 64, bold=True).render("ASTRO BOY", True, title_col)
     screen.blit(title, (WIDTH//2 - title.get_width()//2, 160))
 
-    sub = pygame.font.SysFont("consolas", 20, bold=True).render("CITY DEFENDER", True, NEON_YELLOW)
+    sub = pygame.font.SysFont("consolas", 20, bold=True).render("RND DEFENDER", True, NEON_YELLOW)
     screen.blit(sub, (WIDTH//2 - sub.get_width()//2, 240))
 
-    # Controls
-    lines = [
-        ("← →   Move",       WHITE),
-        ("↑      Jump",       WHITE),
-        ("SPACE  Shoot",      WHITE),
-        ("Q      Super / Mega", WHITE),
-    ]
-
-
-    # Blinking press enter
     if (t // 500) % 2 == 0:
         enter = pygame.font.SysFont("consolas", 22, bold=True).render("PRESS ENTER TO PLAY", True, NEON_CYAN)
         screen.blit(enter, (WIDTH//2 - enter.get_width()//2, 460))
@@ -1523,7 +1429,6 @@ def draw_start_screen():
 # WEAPON FIRE HELPERS
 # ==============================
 def fire_weapon(gs, screen_particles=None):
-    """Fire the current weapon. Returns list of new bullets to add."""
     weapon = gs["weapon"]
     pr = gs["player_rect"]
     facing = gs["facing_right"]
@@ -1558,7 +1463,7 @@ def fire_weapon(gs, screen_particles=None):
     elif weapon == "laser":
         if gs["weapon_ammo"] <= 0:
             gs["weapon"] = "blaster"; return fire_weapon(gs)
-        gs["shoot_cooldown"] = 4   # rapid fire
+        gs["shoot_cooldown"] = 4
         gs["weapon_ammo"] -= 1
         b = Bullet(bx2, by2, dir2, speed=18, color=NEON_GREEN)
         b.w = 20; b.h = 3
@@ -1585,7 +1490,6 @@ def fire_weapon(gs, screen_particles=None):
         gs["shoot_cooldown"] = 3
         gs["weapon_ammo"] -= 1
         gs["flame_active"] = 12
-        # Spawn many short-range particles that act as bullets
         for _ in range(6):
             spread = random.uniform(-0.3, 0.3)
             spd = random.uniform(6, 12)
@@ -1604,13 +1508,11 @@ def fire_weapon(gs, screen_particles=None):
 
 
 def explode_rocket_proj(gs, bx2, by2):
-    """Create explosion when rocket projectile hits something."""
     gs["shake_timer"] = max(gs["shake_timer"], 20)
     for _ in range(40):
         gs["particles"].append(Particle(bx2, by2,
             random.choice([NEON_RED, NEON_ORANGE, NEON_YELLOW, WHITE]),
             random.uniform(-8,8), random.uniform(-9,-1), life=random.randint(20,45), size=random.randint(4,10)))
-    # Damage enemies/boss in radius
     BLAST_R = 120
     for e in gs["enemies"]:
         if e.alive:
@@ -1647,7 +1549,6 @@ def explode_rocket_proj(gs, bx2, by2):
 
 
 def draw_weapon_hud(surface, weapon, ammo):
-    """Draw current weapon indicator bottom-right."""
     panel_w, panel_h = 180, 46
     px = WIDTH - panel_w - 10; py = HEIGHT - panel_h - 10
     panel = pygame.Surface((panel_w, panel_h), pygame.SRCALPHA)
@@ -1662,7 +1563,6 @@ def draw_weapon_hud(surface, weapon, ammo):
     if weapon != "blaster":
         ammo_lbl = wf.render(f"AMMO: {ammo}", True, WHITE if ammo > 2 else NEON_RED)
         surface.blit(ammo_lbl, (px+8, py+24))
-        # Ammo pips
         max_ammo = WEAPON_AMMO.get(weapon, 1)
         for i in range(max_ammo):
             pip_col = col if i < ammo else (50,50,50)
@@ -1679,11 +1579,386 @@ def draw_weapon_hud(surface, weapon, ammo):
 gs = init_level(1)
 game_over = False
 game_won  = False
-game_state = "start"   # "start" | "playing" | "over" | "won"
+game_state = "start"   # "start" | "playing" | "over" | "cutscene" | "credits" | "won"
 running   = True
 tr_alpha  = 0
 tr_dir    = 0
 tr_pending_level = None
+
+# ---- CUTSCENE STATE ----
+cutscene_timer  = 0 
+CUTSCENE_TOTAL  = 60 * 12   # 12 seconds at 60fps
+credits_scroll  = 0
+CREDITS_SPEED   = 1.2
+
+# Freed prisoners — little pixel people with names
+PRISONERS = [
+    {"name": "Dr. Aeron",   "role": "Lead Scientist",      "color": (100,200,255), "hat": True},
+    {"name": "Mark",        "role": "Pilot",                "color": (255,180,100), "hat": False},
+    {"name": "Leann",        "role": "Engineer",             "color": (180,255,120), "hat": False},
+    {"name": "Kara",         "role": "Security Chief",       "color": (255,120,120), "hat": True},
+    {"name": "Shaira",       "role": "Medic",                "color": (200,150,255), "hat": False},
+    {"name": "Gian",       "role": "Navigator",            "color": (255,220,80),  "hat": True},
+    {"name": "Jc",       "role": "Data Analyst",         "color": (80,255,220),  "hat": False},
+    {"name": "Louiza",      "role": "Weapons Tech",         "color": (255,100,200), "hat": False},
+]
+
+CREDITS_LINES = [
+    ("★  ASTRO BOY: RND DEFENDER  ★",  (255,220,0),   36, True),
+    ("",                                  WHITE,          18, False),
+    ("",                                  WHITE,          18, False),
+    ("DEVELOPED BY",                      (0,255,255),   20, True),
+    ("Astro Nowi",                WHITE,          28, False),
+    ("",                                  WHITE,          18, False),
+    ("",                                  WHITE,          18, False),
+    ("PROGRAMMING",                       (0,255,255),   20, True),
+    ("Astro Nowi",                        WHITE,          22, False),
+    ("Leann",                    WHITE,          22, False),
+    ("Broom Broom",                          WHITE,          22, False),
+    ("",                                  WHITE,          18, False),
+    ("DESIGN",                            (0,255,255),   20, True),
+    ("Astro Nowi",                      WHITE,          22, False),
+    ("SPECIAL THANKS",                    (255,100,200), 22, True),
+    ("To everyone who played",            WHITE,          20, False),
+    ("and Leann Sunget",        WHITE,          20, False),
+    ("",                                  WHITE,          18, False),
+    ("",                                  WHITE,          18, False),
+    ("★  PRISONERS FREED: 8  ★",         (0,255,100),   26, True),
+    ("RND is safe again.",         (200,255,200), 20, False),
+    ("",                                  WHITE,          18, False),
+    ("",                                  WHITE,          18, False),
+    ("",                                  WHITE,          18, False),
+    ("PRESS  R  TO PLAY AGAIN",           (255,220,0),   24, True),
+    ("PRESS  ENTER  FOR TITLE",           (200,200,200), 18, False),
+    ("",                                  WHITE,          18, False),
+    ("",                                  WHITE,          18, False),
+    ("",                                  WHITE,          18, False),
+]
+
+
+def draw_pixel_person(surface, x, y, color, hat=False, frame=0, scale=1):
+    """Draw a cute pixel-art style freed prisoner."""
+    s = scale
+    # Body bounce
+    bob = int(math.sin(frame * 0.18) * 3 * s)
+    y += bob
+    # Head
+    pygame.draw.rect(surface, color,        (x - 7*s, y - 18*s, 14*s, 12*s), border_radius=int(3*s))
+    # Eyes
+    pygame.draw.rect(surface, (0,0,0),      (x - 4*s, y - 15*s, 3*s, 3*s))
+    pygame.draw.rect(surface, (0,0,0),      (x + 1*s, y - 15*s, 3*s, 3*s))
+    # Smile
+    pygame.draw.rect(surface, (0,0,0),      (x - 3*s, y - 9*s,  6*s, 2*s))
+    # Hat
+    if hat:
+        pygame.draw.rect(surface, (40,40,40),(x - 8*s, y - 22*s, 16*s, 6*s))
+        pygame.draw.rect(surface, (40,40,40),(x - 5*s, y - 28*s, 10*s, 8*s))
+    # Body
+    pygame.draw.rect(surface, color,        (x - 8*s, y - 6*s,  16*s, 14*s), border_radius=int(2*s))
+    # Arms wave
+    arm_angle = math.sin(frame * 0.22) * 0.6
+    lax = int(x - 8*s + math.cos(math.pi + arm_angle) * 10*s)
+    lay = int(y - 2*s + math.sin(math.pi + arm_angle) * 6*s)
+    rax = int(x + 8*s + math.cos(arm_angle) * 10*s)
+    ray = int(y - 2*s + math.sin(arm_angle) * 6*s)
+    pygame.draw.line(surface, color, (x - 8*s, y - 2*s), (lax, lay), max(1, int(3*s)))
+    pygame.draw.line(surface, color, (x + 8*s, y - 2*s), (rax, ray), max(1, int(3*s)))
+    # Legs
+    leg = int(math.sin(frame * 0.22) * 4 * s)
+    pygame.draw.rect(surface, color, (x - 6*s, y + 8*s,  5*s, 10*s + leg))
+    pygame.draw.rect(surface, color, (x + 1*s, y + 8*s,  5*s, 10*s - leg))
+
+
+def draw_cutscene(surface, timer, final_score):
+    """Full cutscene: boss explodes → cage opens → prisoners run free → celebration."""
+    tick = pygame.time.get_ticks()
+    t = timer  # counts UP from 0
+
+    # ---- BLACK FADE IN ----
+    screen.fill((2, 2, 18))
+
+    # Starfield background
+    random.seed(77)
+    for _ in range(200):
+        sx = random.randint(0, WIDTH)
+        sy = random.randint(0, HEIGHT)
+        sr = random.randint(1, 2)
+        sa = random.randint(80, 200)
+        pygame.draw.circle(surface, (sa, sa, sa), (sx, sy), sr)
+
+    # City silhouette at bottom
+    random.seed(55)
+    bx2 = 0
+    while bx2 < WIDTH:
+        bw = random.randint(30, 90)
+        bh = random.randint(40, 140)
+        shade = random.randint(15, 35)
+        pygame.draw.rect(surface, (shade, shade, shade+10), (bx2, HEIGHT - bh, bw, bh))
+        bx2 += bw + random.randint(2, 10)
+
+    # Ground
+    pygame.draw.rect(surface, (20, 20, 30), (0, HEIGHT - 70, WIDTH, 70))
+    pygame.draw.rect(surface, (0, 120, 180), (0, HEIGHT - 72, WIDTH, 3))
+
+    PHASE1 = 60   # boss explosion
+    PHASE2 = 160  # cage breaks open
+    PHASE3 = 260  # prisoners run out
+    PHASE4 = 400  # celebration dance
+    PHASE5 = 600  # fade to credits
+
+    # ---- PHASE 1: BOSS EXPLOSION ----
+    if t < PHASE2:
+        boss_cx = WIDTH // 2
+        boss_cy = HEIGHT // 2 - 40
+        progress = min(1.0, t / PHASE1)
+
+        # Draw damaged boss remnants
+        if t < PHASE1:
+            # Boss still visible, shaking and smoking
+            shake = random.randint(-int(8*progress), int(8*progress))
+            bsx = boss_cx - 45 + shake
+            bsy = boss_cy - 50 + shake
+            # Darkened body
+            pygame.draw.rect(surface, (80, 40, 0), (bsx+8, bsy+35, 74, 50), border_radius=8)
+            pygame.draw.rect(surface, (60, 20, 0), (bsx+20, bsy+5, 50, 35), border_radius=10)
+            # Cracks overlay
+            for i in range(5):
+                random.seed(i*13 + t//3)
+                cx1 = bsx + random.randint(10, 80)
+                cy1 = bsy + random.randint(5, 80)
+                pygame.draw.line(surface, (255,60,0), (cx1,cy1),
+                    (cx1+random.randint(-20,20), cy1+random.randint(-20,20)), 2)
+            # Smoke puffs
+            for i in range(6):
+                smoke_t = (t + i * 10) % 60
+                sx2 = boss_cx + random.randint(-30, 30)
+                sy2 = boss_cy - 30 - smoke_t * 2
+                sr2 = int(5 + smoke_t * 0.4)
+                sa2 = max(0, 180 - smoke_t * 3)
+                smoke_s = pygame.Surface((sr2*2, sr2*2), pygame.SRCALPHA)
+                pygame.draw.circle(smoke_s, (80, 80, 80, sa2), (sr2, sr2), sr2)
+                surface.blit(smoke_s, (sx2 - sr2, sy2 - sr2))
+
+        # Explosion burst
+        if t >= PHASE1 - 20:
+            ep = min(1.0, (t - (PHASE1-20)) / 30)
+            for i in range(16):
+                angle = i * math.pi / 8
+                dist = ep * 160
+                ex2 = int(boss_cx + math.cos(angle) * dist)
+                ey2 = int(boss_cy + math.sin(angle) * dist)
+                size = int((1 - ep) * 22 + 5)
+                col = [(255,220,0),(255,140,0),(255,60,0),(255,255,200)][i%4]
+                if size > 0:
+                    pygame.draw.circle(surface, col, (ex2, ey2), size)
+            # Center flash
+            flash_a = int(max(0, 255 * (1 - ep * 2)))
+            if flash_a > 0:
+                fs = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+                fs.fill((255, 200, 100, flash_a))
+                surface.blit(fs, (0, 0))
+
+        # DEFEATED text
+        if t > PHASE1:
+            fade = min(1.0, (t - PHASE1) / 30)
+            font_d = pygame.font.SysFont("consolas", 42, bold=True)
+            msg = "BOSS DEFEATED!"
+            ms = font_d.render(msg, True, NEON_YELLOW)
+            msh = font_d.render(msg, True, (80, 60, 0))
+            ms.set_alpha(int(255 * fade))
+            msh.set_alpha(int(255 * fade))
+            surface.blit(msh, (WIDTH//2 - ms.get_width()//2 + 2, HEIGHT//3 + 2))
+            surface.blit(ms,  (WIDTH//2 - ms.get_width()//2,     HEIGHT//3))
+
+    # ---- PHASE 2: CAGE BREAKS OPEN ----
+    if PHASE2 <= t < PHASE4:
+        cage_x = WIDTH // 2 - 100
+        cage_y = HEIGHT - 180
+        cage_w = 200
+        cage_h = 110
+        break_prog = min(1.0, (t - PHASE2) / 60) if t >= PHASE2 else 0
+
+        # Draw cage (broken progressively)
+        cage_col = (100, 100, 120)
+        # Back wall
+        if break_prog < 1.0:
+            pygame.draw.rect(surface, (30, 30, 40), (cage_x, cage_y, cage_w, cage_h), border_radius=4)
+        # Bars (fade away as break_prog increases)
+        bar_alpha = int(255 * max(0, 1 - break_prog * 2))
+        if bar_alpha > 0:
+            bar_surf = pygame.Surface((cage_w, cage_h), pygame.SRCALPHA)
+            for i in range(7):
+                bx3 = 10 + i * 28
+                pygame.draw.line(bar_surf, (*cage_col, bar_alpha), (bx3, 0), (bx3, cage_h), 4)
+            pygame.draw.line(bar_surf, (*cage_col, bar_alpha), (0, 0), (cage_w, 0), 5)
+            pygame.draw.line(bar_surf, (*cage_col, bar_alpha), (0, cage_h), (cage_w, cage_h), 5)
+            surface.blit(bar_surf, (cage_x, cage_y))
+
+        # Crack / explosion on cage door
+        if t >= PHASE2 + 10:
+            ep2 = min(1.0, (t - PHASE2 - 10) / 25)
+            for i in range(8):
+                angle2 = i * math.pi / 4
+                dist2 = ep2 * 50
+                ex3 = int(cage_x + cage_w//2 + math.cos(angle2) * dist2)
+                ey3 = int(cage_y + cage_h//2 + math.sin(angle2) * dist2)
+                sz = int((1 - ep2) * 10 + 3)
+                if sz > 0:
+                    pygame.draw.circle(surface, NEON_YELLOW, (ex3, ey3), sz)
+
+        # "CAGE BROKEN!" text
+        if t >= PHASE2 + 30:
+            fade2 = min(1.0, (t - PHASE2 - 30) / 20)
+            font_c = pygame.font.SysFont("consolas", 30, bold=True)
+            cm = font_c.render("PRISONERS FREED!", True, NEON_GREEN)
+            cm.set_alpha(int(255 * fade2))
+            surface.blit(cm, (WIDTH//2 - cm.get_width()//2, cage_y - 40))
+
+    # ---- PHASE 3 + 4: PRISONERS RUN OUT AND CELEBRATE ----
+    if t >= PHASE3:
+        run_progress = min(1.0, (t - PHASE3) / 120)
+        frame_anim = t
+
+        for i, p in enumerate(PRISONERS):
+            # Each prisoner staggers their exit
+            delay = i * 12
+            local_t = max(0, t - PHASE3 - delay)
+            if local_t <= 0:
+                continue
+
+            run_p = min(1.0, local_t / 80)
+
+            # Position: starts at center (cage), runs to spread positions
+            start_x = WIDTH // 2 + (i % 2) * 20 - 10
+            target_x = 60 + i * (WIDTH - 120) // max(1, len(PRISONERS) - 1)
+            px2 = int(start_x + (target_x - start_x) * run_p)
+            py2 = HEIGHT - 75
+
+            # Draw person
+            alpha_s = pygame.Surface((80, 80), pygame.SRCALPHA)
+            draw_pixel_person(alpha_s, 40, 55, p["color"], p["hat"], frame_anim + i*7)
+            fade_in = min(1.0, local_t / 20)
+            alpha_s.set_alpha(int(255 * fade_in))
+            surface.blit(alpha_s, (px2 - 40, py2 - 55))
+
+            # Name tag (appears after they've run to position)
+            if run_p > 0.85:
+                name_fade = min(1.0, (run_p - 0.85) / 0.15)
+                nf2 = pygame.font.SysFont("consolas", 10, bold=True)
+                nm = nf2.render(p["name"], True, p["color"])
+                ro = nf2.render(p["role"], True, (180, 180, 180))
+                nm.set_alpha(int(255 * name_fade))
+                ro.set_alpha(int(200 * name_fade))
+                surface.blit(nm, (px2 - nm.get_width()//2, py2 - 75))
+                surface.blit(ro, (px2 - ro.get_width()//2, py2 - 62))
+
+        # Celebration particles / confetti
+        if t >= PHASE4:
+            random.seed(t // 3)
+            for _ in range(20):
+                cx3 = random.randint(0, WIDTH)
+                cy3 = random.randint(HEIGHT//2, HEIGHT - 80)
+                cr3 = random.randint(3, 7)
+                cc = random.choice([NEON_YELLOW, NEON_CYAN, NEON_PINK, NEON_GREEN, WHITE, NEON_ORANGE])
+                pygame.draw.circle(surface, cc, (cx3, cy3), cr3)
+
+        # "METRO CITY IS FREE!" banner
+        if t >= PHASE4:
+            fade3 = min(1.0, (t - PHASE4) / 40)
+            font_big2 = pygame.font.SysFont("consolas", 34, bold=True)
+            btext = "★  RND IS FREE!  ★"
+            bg_s = pygame.Surface((WIDTH, 52), pygame.SRCALPHA)
+            bg_s.fill((0, 0, 0, int(180 * fade3)))
+            surface.blit(bg_s, (0, HEIGHT//2 - 160))
+            bt = font_big2.render(btext, True, NEON_YELLOW)
+            bsh = font_big2.render(btext, True, (80, 60, 0))
+            bt.set_alpha(int(255 * fade3))
+            bsh.set_alpha(int(255 * fade3))
+            surface.blit(bsh, (WIDTH//2 - bt.get_width()//2 + 2, HEIGHT//2 - 152))
+            surface.blit(bt,  (WIDTH//2 - bt.get_width()//2,     HEIGHT//2 - 152))
+
+        # Score display
+        if t >= PHASE4 + 30:
+            fade4 = min(1.0, (t - PHASE4 - 30) / 30)
+            sc_f = pygame.font.SysFont("consolas", 22, bold=True)
+            sc_t = sc_f.render(f"FINAL SCORE:  {final_score:06d}", True, NEON_CYAN)
+            sc_t.set_alpha(int(255 * fade4))
+            surface.blit(sc_t, (WIDTH//2 - sc_t.get_width()//2, HEIGHT//2 - 110))
+
+    # ---- PHASE 5: "PRESS ANY KEY" prompt ----
+    if t >= PHASE5:
+        fade5 = min(1.0, (t - PHASE5) / 40)
+        if (tick // 600) % 2 == 0:
+            pf = pygame.font.SysFont("consolas", 18, bold=True)
+            pt = pf.render("PRESS ANY KEY FOR CREDITS", True, WHITE)
+            pt.set_alpha(int(220 * fade5))
+            surface.blit(pt, (WIDTH//2 - pt.get_width()//2, HEIGHT - 38))
+
+    # ---- BLACK FADE IN (first 30 frames) ----
+    if t < 30:
+        fade_in_a = int(255 * (1 - t / 30))
+        black = pygame.Surface((WIDTH, HEIGHT))
+        black.fill((0, 0, 0))
+        black.set_alpha(fade_in_a)
+        surface.blit(black, (0, 0))
+
+
+def draw_credits(surface, scroll_y, final_score):
+    """Scrolling credits screen with starfield background."""
+    tick = pygame.time.get_ticks()
+    surface.fill((2, 2, 18))
+
+    # Starfield
+    random.seed(99)
+    for _ in range(250):
+        sx = random.randint(0, WIDTH)
+        sy = random.randint(0, HEIGHT)
+        twinkle = abs(math.sin(tick * 0.003 + sx * 0.1))
+        sr = 1 if random.random() < 0.7 else 2
+        sa = int(80 + 120 * twinkle)
+        sc2 = random.choice([(sa,sa,sa),(0,sa,sa),(sa,sa//2,sa)])
+        pygame.draw.circle(surface, sc2, (sx, sy), sr)
+
+    # Astro Boy silhouette (top decorative)
+    sil_x = WIDTH // 2
+    sil_y = 90
+    sil_col = (0, 100, 140)
+    pygame.draw.circle(surface, sil_col, (sil_x, sil_y - 20), 22)
+    pygame.draw.rect(surface, sil_col, (sil_x - 14, sil_y, 28, 30), border_radius=4)
+    pygame.draw.rect(surface, sil_col, (sil_x - 12, sil_y + 30, 8, 16), border_radius=3)
+    pygame.draw.rect(surface, sil_col, (sil_x + 4,  sil_y + 30, 8, 16), border_radius=3)
+    # Glow around silhouette
+    glow_s = pygame.Surface((80, 80), pygame.SRCALPHA)
+    pulse_g = abs(math.sin(tick * 0.004))
+    pygame.draw.circle(glow_s, (0, 200, 255, int(60 * pulse_g)), (40, 40), 38)
+    surface.blit(glow_s, (sil_x - 40, sil_y - 60))
+
+    # Scrolling text
+    y_start = HEIGHT + 20 - int(scroll_y)
+    for (text, color, size, bold) in CREDITS_LINES:
+        font_cr = pygame.font.SysFont("consolas", size, bold=bold)
+        if text == "":
+            y_start += size + 4
+            continue
+        rendered = font_cr.render(text, True, color)
+        # Glow for headers
+        if bold and size > 22:
+            glow_t = pygame.Surface((rendered.get_width() + 20, rendered.get_height() + 10), pygame.SRCALPHA)
+            glow_col_t = color if len(color) == 3 else color[:3]
+            pygame.draw.rect(glow_t, (*glow_col_t, 30),
+                             (0, 0, rendered.get_width() + 20, rendered.get_height() + 10),
+                             border_radius=4)
+            surface.blit(glow_t, (WIDTH//2 - rendered.get_width()//2 - 10, y_start - 5))
+        surface.blit(rendered, (WIDTH//2 - rendered.get_width()//2, y_start))
+        y_start += size + 10
+
+    # Top / bottom gradient bars to fade text in/out
+    for i in range(80):
+        a = int(255 * (1 - i / 80))
+        pygame.draw.line(surface, (2, 2, 18), (0, i), (WIDTH, i))
+        pygame.draw.line(surface, (2, 2, 18), (0, HEIGHT - 1 - i), (WIDTH, HEIGHT - 1 - i))
+
+    return y_start  # returns final text bottom y (to detect scroll end)
 
 while running:
     clock.tick(60)
@@ -1696,12 +1971,27 @@ while running:
                 if event.key in (pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_SPACE):
                     game_state = "playing"
                     gs = init_level(1)
+            elif game_state == "cutscene":
+                if cutscene_timer >= 120:
+                    game_state = "credits"
+                    credits_scroll = 0
+            elif game_state == "credits":
+                if event.key == pygame.K_r:
+                    gs = init_level(1)
+                    game_over = False; game_won = False
+                    game_state = "playing"
+                    current_level = 1
+                    cutscene_timer = 0; credits_scroll = 0
+                    tr_alpha = 0; tr_dir = 0; tr_pending_level = None
+                elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
+                    game_state = "start"
             elif game_state in ("over", "won"):
                 if event.key == pygame.K_r:
                     gs = init_level(1)
                     game_over = False; game_won = False
                     game_state = "playing"
                     current_level = 1
+                    cutscene_timer = 0; credits_scroll = 0
                     tr_alpha = 0; tr_dir = 0; tr_pending_level = None
                 elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
                     game_state = "start"
@@ -1709,6 +1999,26 @@ while running:
     # ---- START SCREEN ----
     if game_state == "start":
         draw_start_screen()
+        pygame.display.update()
+        continue
+
+    # ---- CUTSCENE ----
+    if game_state == "cutscene":
+        cutscene_timer += 1
+        draw_cutscene(screen, cutscene_timer, gs["score"])
+        if cutscene_timer >= CUTSCENE_TOTAL:
+            game_state = "credits"
+            credits_scroll = 0
+        pygame.display.update()
+        continue
+
+    # ---- CREDITS ----
+    if game_state == "credits":
+        credits_scroll += CREDITS_SPEED
+        draw_credits(screen, credits_scroll, gs["score"])
+        total_credits_h = sum(s + 10 for _, _, s, _ in CREDITS_LINES)
+        if credits_scroll > total_credits_h + HEIGHT + 60:
+            credits_scroll = 0
         pygame.display.update()
         continue
 
@@ -1764,7 +2074,9 @@ while running:
                 tr_dir = 1
                 tr_pending_level = 2
             else:
-                game_won = True
+                # Trigger ending cutscene instead of instant win screen
+                game_state = "cutscene"
+                cutscene_timer = 0
             gs["level_complete"] = False
         if tr_alpha > 0:
             ov = pygame.Surface((WIDTH, HEIGHT))
@@ -1776,7 +2088,8 @@ while running:
     keys = pygame.key.get_pressed()
     moving = False
 
-    if not gs["player_in_rocket"]:
+    # ---- MOVEMENT: frozen during super laser ----
+    if not gs["player_in_rocket"] and gs["super_active"] == 0:
         if keys[pygame.K_LEFT]:
             gs["player_rect"].x -= 5
             gs["facing_right"] = False; moving = True
@@ -1897,7 +2210,6 @@ while running:
         gs["mega_anim"] += 1
         phase = gs["mega_missile_phase"]
 
-        # Screen shake
         shake_map = {0: 3, 1: 6, 2: 10, 3: 2}
         intensity = shake_map.get(phase, 2)
         gs["shake_x"] = random.randint(-intensity, intensity)
@@ -1905,19 +2217,15 @@ while running:
         if gs["mega_active"] == 0:
             gs["shake_x"] = 0; gs["shake_y"] = 0
 
-        # ---- PHASE 0: robot descends ----
         if phase == 0:
             if gs["mega_anim"] >= MEGA_ROBOT_DESCENT:
                 gs["mega_missile_phase"] = 1
                 gs["mega_anim"] = 0
 
-        # ---- PHASE 1: missile barrage ----
         elif phase == 1:
-            # Spawn missiles — starts slow, ramps up to a storm
             ramp = min(1.0, gs["mega_anim"] / 60)
-            spawn_chance = 0.15 + 0.55 * ramp   # 15% → 70% per frame
+            spawn_chance = 0.15 + 0.55 * ramp
             if random.random() < spawn_chance:
-                # Spread launches across the visible world area
                 mx = gs["camera_x"] + random.uniform(-50, WIDTH + 50)
                 gs["mega_missiles"].append({
                     "x": mx,
@@ -1927,17 +2235,14 @@ while running:
                     "age": 0,
                 })
 
-            # Update missiles
             for m in gs["mega_missiles"]:
                 m["x"] += m["vx"]
                 m["y"] += m["vy"]
                 m["age"] += 1
 
-            # Check missile impacts
             for m in list(gs["mega_missiles"]):
                 if m["y"] > GROUND_Y + 20:
                     m["dead"] = True
-                    # Explosion particles at ground level
                     for _ in range(25):
                         gs["particles"].append(Particle(
                             m["x"], GROUND_Y,
@@ -1945,7 +2250,6 @@ while running:
                             random.uniform(-8, 8), random.uniform(-10, -2),
                             life=40, size=random.randint(3, 9)
                         ))
-                    # Damage nearby enemies
                     for e in gs["enemies"]:
                         if not e.alive: continue
                         if abs(e.x - m["x"]) < 120:
@@ -1961,7 +2265,6 @@ while running:
                                         gs["mega_ready"] = True; gs["super_ready"] = False
                                     else:
                                         gs["super_ready"] = True
-                    # Damage boss if nearby
                     boss2 = gs["boss"]
                     if boss2.alive and abs(boss2.x + boss2.w//2 - m["x"]) < 150:
                         boss2.hp -= 3; boss2.flash_timer = 8
@@ -1982,7 +2285,6 @@ while running:
                 gs["mega_missile_phase"] = 2
                 gs["mega_anim"] = 0
 
-        # ---- PHASE 2: cleanup — any remaining missiles land, big explosions ----
         elif phase == 2:
             for m in gs["mega_missiles"]:
                 m["x"] += m["vx"]
@@ -1999,7 +2301,6 @@ while running:
                         ))
             gs["mega_missiles"] = [m for m in gs["mega_missiles"] if not m.get("dead")]
 
-            # Random ground explosions (aftermath)
             if random.random() < 0.4:
                 ex = gs["camera_x"] + random.uniform(0, WIDTH)
                 for _ in range(15):
@@ -2014,9 +2315,8 @@ while running:
                 gs["mega_anim"] = 0
                 gs["mega_missiles"] = []
 
-        # ---- PHASE 3: robot exits ----
         elif phase == 3:
-            pass   # just visuals
+            pass
 
     gs["velocity_y"] += 0.5
     gs["player_rect"].y += int(gs["velocity_y"])
@@ -2058,7 +2358,6 @@ while running:
                         random.uniform(-4, 4), random.uniform(-5, -1), life=30, size=random.randint(2, 6)
                     ))
 
-    # ---- WEAPON PICKUPS ----
     for wp in gs["weapon_pickups"]:
         if not wp.alive: continue
         wp.update()
@@ -2075,8 +2374,8 @@ while running:
                     random.uniform(-5,5), random.uniform(-6,-1), life=35, size=random.randint(3,8)
                 ))
 
-    # ---- SPIKE TRAP DAMAGE ----
-    if gs["invincible"] == 0 and not gs["player_in_rocket"]:
+    # ---- SPIKE TRAP DAMAGE: blocked during super ----
+    if gs["invincible"] == 0 and not gs["player_in_rocket"] and gs["super_active"] == 0:
         for sp in gs["spike_traps"]:
             if sp.alive and gs["player_rect"].colliderect(sp.get_rect()):
                 gs["player_hp"] -= 1; gs["invincible"] = 60
@@ -2086,11 +2385,9 @@ while running:
                         NEON_RED, random.uniform(-3,3), random.uniform(-4,-1), life=20))
                 if gs["player_hp"] <= 0: game_over = True
 
-    # ---- TURRET UPDATE + BULLET COLLISIONS ----
     for t2 in gs["turrets"]:
         if t2.alive:
             t2.update(gs["player_rect"], gs["bullets"])
-    # Turret hit by player bullets
     for b in gs["bullets"][:]:
         if b.is_enemy: continue
         br = b.get_rect()
@@ -2113,7 +2410,6 @@ while running:
                             random.uniform(-6,6), random.uniform(-7,-1), life=40, size=random.randint(3,8)))
                 break
 
-    # ---- SHIELD ENEMY UPDATE + BULLET COLLISIONS ----
     for se in gs["shield_enemies"]:
         if se.alive:
             se.update(gs["player_rect"], gs["camera_x"], gs["bullets"])
@@ -2147,13 +2443,11 @@ while running:
                                 random.choice([(80,140,255),NEON_CYAN,WHITE]),
                                 random.uniform(-5,5), random.uniform(-6,-1), life=40))
                 else:
-                    # Shield block spark
                     for _ in range(6):
                         gs["particles"].append(Particle(b.x, b.y, (0,200,255),
                             random.uniform(-4,4), random.uniform(-4,-1), life=12, size=3))
                 break
 
-    # ---- DRONE UPDATE + BULLET COLLISIONS ----
     for d in gs["drones"]:
         if d.alive:
             d.update(gs["player_rect"], gs["camera_x"], gs["bullets"])
@@ -2186,7 +2480,6 @@ while running:
                             random.uniform(-6,6), random.uniform(-7,-1), life=35))
                 break
 
-    # ---- ROCKET PROJECTILE EXPLOSION CHECK ----
     for b in gs["bullets"][:]:
         if b.is_enemy: continue
         if hasattr(b,'is_rocket_proj') and b.is_rocket_proj:
@@ -2194,8 +2487,8 @@ while running:
                 b.alive = False
                 explode_rocket_proj(gs, b.x, b.y)
 
-    # ---- NEW ENEMY PLAYER BODY DAMAGE ----
-    if gs["invincible"] == 0 and not gs["player_in_rocket"]:
+    # ---- ENEMY BODY CONTACT DAMAGE: blocked during super ----
+    if gs["invincible"] == 0 and not gs["player_in_rocket"] and gs["super_active"] == 0:
         for se in gs["shield_enemies"]:
             if se.alive and gs["player_rect"].colliderect(se.get_rect()):
                 gs["player_hp"] -= 1; gs["invincible"] = 90
@@ -2213,7 +2506,6 @@ while running:
                         gs["player_rect"].centerx, gs["player_rect"].centery, NEON_RED))
                 if gs["player_hp"] <= 0: game_over = True
 
-    # Weapon pickup flash timer
     if gs["weapon_pickup_flash"] > 0: gs["weapon_pickup_flash"] -= 1
 
     for b in gs["bullets"][:]:
@@ -2279,7 +2571,8 @@ while running:
                             random.uniform(-12,12), random.uniform(-12,-1), life=80, size=random.randint(4,12)
                         ))
 
-    if gs["invincible"] == 0 and not gs["player_in_rocket"]:
+    # ---- BULLET DAMAGE TO PLAYER: blocked during super ----
+    if gs["invincible"] == 0 and not gs["player_in_rocket"] and gs["super_active"] == 0:
         for b in gs["bullets"][:]:
             if not b.is_enemy: continue
             if b.get_rect().colliderect(gs["player_rect"]):
@@ -2298,13 +2591,12 @@ while running:
     if boss.alive:
         boss.update(gs["player_rect"], gs["camera_x"], gs["bullets"], gs["particles"])
 
-    # ---- BOSS "INCOMING" — only trigger once when boss first appears on screen ----
     if boss.alive and not gs["boss_seen"]:
         boss_screen_x = boss.x - gs["camera_x"]
         if 0 <= boss_screen_x <= WIDTH:
             gs["boss_seen"] = True
             gs["show_boss_warning"] = True
-            gs["boss_warning_timer"] = 180   # show for 3 seconds
+            gs["boss_warning_timer"] = 180
 
     if gs["boss_warning_timer"] > 0:
         gs["boss_warning_timer"] -= 1
@@ -2384,34 +2676,29 @@ while running:
         if -50 < hx_screen < WIDTH + 50:
             hp_item.draw(screen, int(gs["camera_x"]))
 
-    # Draw weapon pickups
     for wp in gs["weapon_pickups"]:
         if not wp.alive: continue
         wx_screen = wp.x - gs["camera_x"]
         if -60 < wx_screen < WIDTH+60:
             wp.draw(screen, int(gs["camera_x"]))
 
-    # Draw spike traps
     for sp in gs["spike_traps"]:
         spx = sp.x - gs["camera_x"]
         if -60 < spx < WIDTH+60:
             sp.draw(screen, int(gs["camera_x"]))
 
-    # Draw turrets
     for t2 in gs["turrets"]:
         if t2.alive:
             txs = t2.x - gs["camera_x"]
             if -80 < txs < WIDTH+80:
                 t2.draw(screen, int(gs["camera_x"]))
 
-    # Draw shield enemies
     for se in gs["shield_enemies"]:
         if se.alive:
             ses = se.x - gs["camera_x"]
             if -80 < ses < WIDTH+80:
                 se.draw(screen, int(gs["camera_x"]))
 
-    # Draw drones
     for d in gs["drones"]:
         if d.alive:
             ds = d.x - gs["camera_x"]
@@ -2438,7 +2725,6 @@ while running:
     for p in gs["particles"]: p.draw(screen, gs["camera_x"])
 
     if not gs["player_in_rocket"]:
-        # Flamethrower cone glow
         if gs["flame_active"] > 0:
             flame_dir = 1 if gs["facing_right"] else -1
             fx = gs["player_rect"].centerx - int(gs["camera_x"])
@@ -2456,6 +2742,15 @@ while running:
                     pygame.draw.rect(cone_surf, (cr,cg,cb,ca), (0, 40-spread-4, rect_w, rect_h), border_radius=4)
             sx_off = fx if flame_dir == 1 else fx - 200
             screen.blit(cone_surf, (sx_off, fy-40))
+
+        # Draw player with cyan shield glow during super
+        if gs["super_active"] > 0:
+            glow_s = pygame.Surface((player_width + 24, player_height + 24), pygame.SRCALPHA)
+            pulse_glow = abs(math.sin(pygame.time.get_ticks() * 0.01))
+            pygame.draw.ellipse(glow_s, (0, 255, 255, int(120 * pulse_glow)),
+                                (0, 0, player_width + 24, player_height + 24))
+            screen.blit(glow_s, (gs["player_rect"].x - int(gs["camera_x"]) - 12,
+                                  gs["player_rect"].y - 12))
 
         if gs["invincible"] == 0 or (gs["invincible"]//6)%2 == 0:
             img = get_frame(gs["state"], gs["is_shooting"], gs["is_super_pose"], gs["velocity_y"], gs["frame_index"])
@@ -2517,7 +2812,6 @@ while running:
         bs = pygame.Surface((WIDTH,bh), pygame.SRCALPHA)
         bs.fill((0,0,0,220)); screen.blit(bs,(0,0)); screen.blit(bs,(0,HEIGHT-bh))
 
-    # Boss incoming — only when boss is visible on screen for first time
     if gs["show_boss_warning"] and gs["boss_warning_timer"] > 0:
         if (gs["boss_warning_timer"]//8)%2==0:
             warn_bg = pygame.Surface((380, 75), pygame.SRCALPHA)
@@ -2529,7 +2823,6 @@ while running:
             dist_txt = font_small.render("Defeat the boss to advance!", True, WHITE)
             screen.blit(dist_txt, (WIDTH//2-dist_txt.get_width()//2, HEIGHT//2-44))
 
-    # Phase 2 rage warning
     if boss.alive and boss.warning_flash > 0 and (boss.warning_flash//5)%2==0:
         rage_bg = pygame.Surface((320, 44), pygame.SRCALPHA)
         rage_bg.fill((0,0,0,150))
@@ -2537,7 +2830,6 @@ while running:
         rage = font_big.render("BOSS ENRAGED!", True, NEON_ORANGE)
         screen.blit(rage, (WIDTH//2-rage.get_width()//2, HEIGHT//2-50))
 
-    # Rocket boarding prompt
     if gs["player_in_rocket"] and not rocket.launching:
         board_bg = pygame.Surface((300, 40), pygame.SRCALPHA)
         board_bg.fill((0,0,0,160))
@@ -2547,7 +2839,6 @@ while running:
 
     draw_weapon_hud(screen, gs["weapon"], gs["weapon_ammo"])
 
-    # Weapon pickup flash overlay
     if gs["weapon_pickup_flash"] > 0:
         flash_frac = gs["weapon_pickup_flash"] / 80
         col = WEAPON_COLORS.get(gs["weapon"], NEON_CYAN)
@@ -2561,7 +2852,8 @@ while running:
         screen.blit(sh_txt, (WIDTH//2-pick_txt.get_width()//2+2, HEIGHT//2-80+2))
         screen.blit(pick_txt, (WIDTH//2-pick_txt.get_width()//2, HEIGHT//2-80))
 
-    draw_hud(gs["player_hp"], gs["score"], gs["kill_count"], gs["super_ready"], gs["super_stacks"], gs["mega_ready"], current_level)
+    draw_hud(gs["player_hp"], gs["score"], gs["kill_count"], gs["super_ready"],
+             gs["super_stacks"], gs["mega_ready"], current_level, gs["super_active"])
 
     if tr_alpha > 0:
         ov = pygame.Surface((WIDTH,HEIGHT)); ov.fill((0,0,0)); ov.set_alpha(tr_alpha)
